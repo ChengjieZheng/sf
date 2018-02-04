@@ -763,7 +763,7 @@ Definition partition {X : Type}
 Example test_partition1: partition oddb [1;2;3;4;5] = ([1;3;5], [2;4]).
 cbv. reflexivity.
 Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
-cbv. reflexivity.
+cbv. reflexivity. Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -859,7 +859,7 @@ Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X)
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- cbv. reflexivity.
+ cbv. reflexivity. Qed.
 
 (** Lists are not the only inductive type that we can write a
     [map] function for.  Here is the definition of [map] for the
@@ -1228,10 +1228,9 @@ Proof. (* FILL IN HERE *) Admitted.
 Example exp_3 : exp three zero = one.
 Proof. (* FILL IN HERE *) Admitted.
 
-End Church.
 (** [] *)
 
-End Exercises.
+Abort All.
 
 (** $Date: 2018-01-23 21:16:07 -0500 (Tue, 23 Jan 2018) $ *)
 
