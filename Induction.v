@@ -1,6 +1,3 @@
-
-
-
 (** * Induction: Proof by Induction *)
 
 (** Before getting started, we need to import all of our
@@ -468,8 +465,17 @@ Qed.
 
 Theorem mult_comm : forall m n : nat, m * n = n * m.
 Proof.
-Admitted.
-
+intros m n.
+induction n.
+-
+simpl. rewrite mult_0_r. reflexivity.
+-  
+rewrite <- mult_n_Sm.
+rewrite IHn.
+simpl.
+rewrite plus_comm.
+reflexivity.  
+Qed.
 
 (** **** Exercise: 3 stars, optional (more_exercises)  *)
 (** Take a piece of paper.  For each of the following theorems, first
@@ -489,9 +495,6 @@ Fixpoint leb (n m : nat) : bool :=
       | S m' => leb n' m'
       end
   end.
-
-
-Check leb.
 
 Theorem leb_refl : forall n:nat,
   true = leb n n.
@@ -573,12 +576,21 @@ Qed.
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n m p.
+induction n.
+- simpl. reflexivity.
+- rewrite plus_Sn_m. simpl. rewrite IHn. rewrite plus_assoc. reflexivity.
+Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n m p.
+induction n.
+- simpl. reflexivity.
+- simpl. rewrite IHn. rewrite mult_plus_distr_r. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (beq_nat_refl)  *)
@@ -650,7 +662,15 @@ Qed.
     definitions to make the property easier to prove, feel free to
     do so! *)
 
-(* FILL IN HERE *)
+Theorem bin_to_nat_pres_incr : forall b: bin,
+  un (incr (b)) = S (un (b)).
+Proof.
+intros b.
+induction b.
+- simpl. reflexivity.
+- simpl. reflexivity.
+- simpl. rewrite IHb. simpl. rewrite <- plus_n_Sm. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (binary_inverse)  *)
