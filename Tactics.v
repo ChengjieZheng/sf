@@ -1142,6 +1142,15 @@ Proof.
 (** This one is a bit challenging.  Pay attention to the form of your
     induction hypothesis. *)
 
+Fixpoint filter {X:Type} (test: X -> bool) (l:list X)
+                : (list X) :=
+  match l with
+  | [] => []
+  | h :: t => if test h then h :: (filter test t)
+                        else filter test t
+  end.
+
+
 Theorem filter_exercise : forall (X : Type) (test : X -> bool)
                              (x : X) (l lf : list X),
      filter test l = x :: lf ->

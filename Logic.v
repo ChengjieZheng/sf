@@ -743,8 +743,12 @@ Proof.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros X P x. 
+unfold not.
+intros x0.
+inversion x0. destruct H.
+apply x.
+Qed.
 
 (** **** Exercise: 2 stars (dist_exists_or)  *)
 (** Prove that existential quantification distributes over
@@ -753,8 +757,34 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
-(** [] *)
+intros X P Q.
+split.
+-
+intros x.
+inversion x.
+destruct H.
++
+left.
+exists x0.
+apply H.
++
+right.
+exists x0.
+exact H.
+-
+intros H.
+destruct H.
++
+inversion H.
+exists x.
+left.
+exact H0.  
++
+inversion H.
+exists x.  
+right.
+exact H0.
+Qed.
 
 (* ################################################################# *)
 (** * Programming with Propositions *)
@@ -773,9 +803,14 @@ Proof.
 (** We can translate this directly into a straightforward recursive
     function taking an element and a list and returning a proposition: *)
 
+Notation "x :: l" := (cons x l)
+                     (at level 60, right associativity).
+Notation "[ ]" := nil.
+Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
+
 Fixpoint In {A : Type} (x : A) (l : list A) : Prop :=
   match l with
-  | [] => False
+  | []  => False
   | x' :: l' => x' = x \/ In x l'
   end.
 
@@ -806,6 +841,12 @@ Qed.
     Note, in the next, how [In] starts out applied to a variable and
     only gets expanded when we do case analysis on this variable: *)
 
+Fixpoint map {X Y:Type} (f:X -> Y) (l:list X) : (list Y) :=
+  match l with
+  | [] => []
+  | h :: t => (f h) :: (map f t)
+  end.
+
 Lemma In_map :
   forall (A B : Type) (f : A -> B) (l : list A) (x : A),
     In x l ->
@@ -814,7 +855,8 @@ Proof.
   intros A B f l x.
   induction l as [|x' l' IHl'].
   - (* l = nil, contradiction *)
-    simpl. intros [].
+    simpl.
+    intros [].
   - (* l = x' :: l' *)
     simpl. intros [H | H].
     + rewrite H. left. reflexivity.
@@ -830,20 +872,86 @@ Qed.
     of strengths and limitations. *)
 
 (** **** Exercise: 2 stars (In_map_iff)  *)
-Lemma In_map_iff :
+ Lemma In_map_iff :
   forall (A B : Type) (f : A -> B) (l : list A) (y : B),
     In y (map f l) <->
     exists x, f x = y /\ In x l.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+intros A B f l y.
+split.
+-
+intros H.
+induction l.
++
+simpl in H.
+inversion H.
++
+simpl in H.
+destruct H as [H1 | H2].
+*
+  exists x.
+  split.
+  exact H1.
+  simpl.
+  left.
+  reflexivity.
+*
+  apply IHl in H2.
+  destruct H2 as [x2 H2].
+  exists x2.
+  split.
+  apply proj1 in H2. exact H2.
+  apply proj2 in H2. simpl. right. exact H2.
+-
+intros H.
+induction l.  
++
+  simpl in H.
+  simpl.
+  destruct H.
+  apply proj2 in H. exact H.
++
+  simpl.
+  destruct H.
+  destruct H.
+  destruct H0.
+  rewrite <- H0 in H.
+  left. exact H.
+  right. apply IHl. exists x0. split. exact H. exact H0.
+Qed.
+  
 (** **** Exercise: 2 stars (In_app_iff)  *)
 Lemma In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros A l1 l2 a.
+split.
+-
+intros H. induction l1.
++
+simpl. simpl in H. right. exact H.
++  
+simpl. simpl in H. destruct H.
+*
+left. left. exact H.
+*
+apply IHl1 in H.
+destruct H.
+left. right. exact H.
+right. exact H.
+-
+intros H.
+induction l1.
++
+simpl in H. simpl. destruct H.
+inversion H. exact H.
++
+simpl. simpl in H. apply or_assoc in H. destruct H.
+*
+left. exact H.
+*
+right. apply IHl1. exact H.
+Qed.  
 
 (** **** Exercise: 3 stars, recommended (All)  *)
 (** Recall that functions returning propositions can be seen as
@@ -874,8 +982,8 @@ Proof.
     equivalent to [Podd n] when [n] is odd and equivalent to [Peven n]
     otherwise. *)
 
-Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
+fun x => if (oddb x) then Podd x else Peven x.  
 
 (** To test your definition, prove the following facts: *)
 
@@ -885,7 +993,30 @@ Theorem combine_odd_even_intro :
     (oddb n = false -> Peven n) ->
     combine_odd_even Podd Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n.
+  unfold oddb.
+  intros odd.
+  intros even.
+induction n.  
+-
+unfold combine_odd_even.
+unfold oddb.
+apply even.
+simpl.
+reflexivity.
+-
+unfold combine_odd_even.
+unfold oddb.
+destruct evenb.
++
+apply even.
+simpl.  
+reflexivity.
++
+apply odd.
+simpl.
+reflexivity.  
+Qed.
 
 Theorem combine_odd_even_elim_odd :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -893,7 +1024,12 @@ Theorem combine_odd_even_elim_odd :
     oddb n = true ->
     Podd n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros Podd Peven n. 
+intros H odd.
+unfold combine_odd_even in H.
+rewrite odd in H.
+exact H.
+Qed.
 
 Theorem combine_odd_even_elim_even :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -901,8 +1037,12 @@ Theorem combine_odd_even_elim_even :
     oddb n = false ->
     Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros Podd Peven n.
+intros H odd.
+unfold combine_odd_even in H.
+rewrite odd in H.
+exact H.
+Qed.
 
 (* ################################################################# *)
 (** * Applying Theorems to Arguments *)
@@ -1009,6 +1149,7 @@ Proof.
            as [m [Hm _]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
 Qed.
+
 
 (** We will see many more examples of the idioms from this section in
     later chapters. *)
@@ -1137,8 +1278,17 @@ Definition tr_rev {X} (l : list X) : list X :=
     case.  Prove that the two definitions are indeed equivalent. *)
 
 Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+Proof.
+intros X.
+apply  functional_extensionality.
+intros x.
+induction x.
+-
+unfold tr_rev.
+simpl.
+reflexivity.
+-
+Abort.
 
 (* ================================================================= *)
 (** ** Propositions and Booleans *)
@@ -1166,16 +1316,27 @@ Proof.
   - simpl. apply IHk'.
 Qed.
 
+
 (** **** Exercise: 3 stars (evenb_double_conv)  *)
 Theorem evenb_double_conv : forall n,
   exists k, n = if evenb n then double k
                 else S (double k).
 Proof.
+  Check @evenb_S.
+  intros n.
+  exists n.
+  induction n.
+  -
+simpl. reflexivity.
+-
+rewrite evenb_S.
+simpl.
+inversion IHn.
+Abort.
   (* Hint: Use the [evenb_S] lemma from [Induction.v]. *)
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  (* FILL IN HERE *) 
 
-Theorem even_bool_prop : forall n,
+(** Theorem even_bool_prop : forall n,
   evenb n = true <-> exists k, n = double k.
 Proof.
   intros n. split.
@@ -1183,6 +1344,7 @@ Proof.
     rewrite Hk. rewrite H. exists k. reflexivity.
   - intros [k Hk]. rewrite Hk. apply evenb_double.
 Qed.
+**)
 
 (** In view of this theorem, we say that the boolean
     computation [evenb n] _reflects_ the logical proposition 
@@ -1271,8 +1433,8 @@ Proof. reflexivity. Qed.
     we can use the boolean formulation to prove the other one without
     mentioning the value 500 explicitly: *)
 
-Example even_1000'' : exists k, 1000 = double k.
-Proof. apply even_bool_prop. reflexivity. Qed.
+(** Example even_1000'' : exists k, 1000 = double k.
+Proof. apply even_bool_prop. reflexivity. Qed. **)
 
 (** Although we haven't gained much in terms of proof size in this
     case, larger proofs can often be made considerably simpler by the
@@ -1287,10 +1449,14 @@ Proof. apply even_bool_prop. reflexivity. Qed.
 (** The following lemmas relate the propositional connectives studied
     in this chapter to the corresponding boolean operations. *)
 
+Notation "x && y" := (andb x y).
+Notation "x || y" := (orb x y).
+
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+Admitted.
+
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
@@ -1527,6 +1693,6 @@ Definition implies_to_or := forall P Q:Prop,
   (P->Q) -> (~P\/Q).
 
 (* FILL IN HERE *)
-(** [] *)
+
 
 (** $Date: 2017-11-14 17:52:45 -0500 (Tue, 14 Nov 2017) $ *)

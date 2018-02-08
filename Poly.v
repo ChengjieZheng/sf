@@ -559,7 +559,8 @@ Fixpoint split {X Y : Type} (l : list (X*Y)): (list X) * (list Y) :=
 Example test_split:
   split [(1,false);(2,false)] = ([1;2],[false;false]).
 Proof.
-simpl. reflexivity.
+  simpl. reflexivity.
+Qed.
 
 (* ================================================================= *)
 (** ** Polymorphic Options *)
@@ -609,9 +610,9 @@ Definition hd_error {X : Type} (l : list X) : option X :=
 Check @hd_error.
 
 Example test_hd_error1 : hd_error [1;2] = Some 1.
-simpl. reflexivity.
+Proof. simpl. reflexivity. Qed.
 Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1].
-simpl. reflexivity.
+Proof. simpl. reflexivity. Qed.
 
 (* ################################################################# *)
 (** * Functions as Data *)
@@ -733,11 +734,11 @@ Definition filter_even_gt7 (l : list nat) : list nat :=
 
 Example test_filter_even_gt7_1 :
   filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
-cbv. reflexivity.
+Proof. cbv. reflexivity. Qed.
 
 Example test_filter_even_gt7_2 :
   filter_even_gt7 [5;2;6;19;129] = [].
-cbv. reflexivity.
+Proof. cbv. reflexivity. Qed.
 
 
 (** **** Exercise: 3 stars (partition)  *)
@@ -761,9 +762,9 @@ Definition partition {X : Type}
   
 
 Example test_partition1: partition oddb [1;2;3;4;5] = ([1;3;5], [2;4]).
-cbv. reflexivity.
+Proof. cbv. reflexivity. Qed.
 Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
-cbv. reflexivity. Qed.
+Proof. cbv. reflexivity. Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -809,8 +810,6 @@ Proof. reflexivity.  Qed.
 (** Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
 
-
-  
 Theorem map_d : forall (X Y : Type) (f:X->Y) (a b : list X),   map f (a ++ b) = map f a ++ map f b.
 Proof.
 intros X Y f a b.
@@ -820,7 +819,6 @@ simpl. reflexivity.
 -
 simpl. rewrite IHa. reflexivity.
 Qed.
-
   
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
@@ -854,12 +852,11 @@ Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X)
   | [] => []
   | h::tl => (f h) ++ flat_map f tl  
   end.
-  
-                       
+                         
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- cbv. reflexivity. Qed.
+ Proof. cbv. reflexivity. Qed.
 
 (** Lists are not the only inductive type that we can write a
     [map] function for.  Here is the definition of [map] for the
@@ -989,7 +986,7 @@ Proof. reflexivity.  Qed.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-
+Module Exercises.
 
 (** **** Exercise: 2 stars (fold_length)  *)
 (** Many common functions on lists can be implemented in terms of
@@ -1135,6 +1132,8 @@ Qed.
     [n] as a function that takes a function [f] as a parameter and
     returns [f] iterated [n] times. *)
 
+Module Church.
+
 Definition nat := forall X : Type, (X -> X) -> X -> X.
 
 (** Let's see how to write some numbers with this notation. Iterating
@@ -1168,46 +1167,47 @@ Definition three : nat := @doit3times.
 
 (** Successor of a natural number: *)
 
-Definition succ (n : nat) : nat 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Print doit3times.
+Definition succ (n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X)  => f (n X f x).
 
 Example succ_1 : succ zero = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example succ_2 : succ one = two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example succ_3 : succ two = three.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 (** Addition of two natural numbers: *)
 
-Definition plus (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
+Definition plus (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => (n X f (m X f x)).
+  
 Example plus_1 : plus zero one = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example plus_2 : plus two three = plus three two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example plus_3 :
   plus (plus two two) three = plus one (plus three three).
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 (** Multiplication: *)
 
-Definition mult (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition mult (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => (n X (m X f) x).
 
 Example mult_1 : mult one one = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example mult_2 : mult zero (plus three three) = zero.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example mult_3 : mult two three = plus three three.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 (** Exponentiation: *)
 
@@ -1216,21 +1216,22 @@ Proof. (* FILL IN HERE *) Admitted.
     a "Universe inconsistency" error, try iterating over a different
     type: [nat] itself is usually problematic.) *)
 
-Definition exp (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition exp (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) =>  (m (X -> X) (n X) f) x.
 
 Example exp_1 : exp two two = plus two two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_2 : exp three two = plus (mult two (mult two two)) one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_3 : exp three zero = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
+End Church.
 (** [] *)
 
-Abort All.
+End Exercises.
 
 (** $Date: 2018-01-23 21:16:07 -0500 (Tue, 23 Jan 2018) $ *)
 
