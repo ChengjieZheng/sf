@@ -46,7 +46,6 @@ Check 3 = 4.
 
 (** So far, we've seen one primary place that propositions can appear:
     in [Theorem] (and [Lemma] and [Example]) declarations. *)
-
 Theorem plus_2_2_is_4 :
   2 + 2 = 4.
 Proof. reflexivity.  Qed.
@@ -337,7 +336,13 @@ Qed.
 Lemma mult_eq_0 :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
-Admitted.
+induction n.
+  simpl. left. reflexivity.
+induction m.
+  simpl. right. reflexivity.
+intros H.
+inversion H.
+Qed.
 
 (** **** Exercise: 1 star (or_commut)  *)
 Theorem or_commut : forall P Q : Prop,
@@ -1455,13 +1460,51 @@ Notation "x || y" := (orb x y).
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-Admitted.
-
+intros b1 b2.
+split.
+-
+intros H.
+split.
+destruct b1.
+reflexivity.
+inversion H.
+destruct b2.
+reflexivity.
+rewrite <- H.
+rewrite andb_false_r in H.
+inversion H.
+-
+intros H.
+destruct H.
+rewrite H.
+rewrite H0.
+reflexivity.
+Qed.
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros b1 b2.
+split.  
+-
+intros H.
+destruct b1.
++
+left. reflexivity.
++
+right. apply H.
+-
+intros H.
+destruct H.
++ rewrite H. reflexivity.  
++ rewrite H.
+Search (?a || ?b).
+assert (or_com: forall (b:bool),  b|| true = true || b).
+*
+intros b. destruct b. reflexivity. reflexivity.
+*
+rewrite or_com. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (beq_nat_false_iff)  *)
@@ -1472,7 +1515,33 @@ Proof.
 Theorem beq_nat_false_iff : forall x y : nat,
   beq_nat x y = false <-> x <> y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros x y.
+unfold not.
+split.
+-
+intros H H2.
+apply beq_nat_true_iff in H2.
+rewrite H2 in H.
+inversion H.
+-
+intros H.
+induction x.
++
+induction y.
+exfalso.
+apply H.  
+reflexivity.
+simpl.
+reflexivity.
++
+induction y.
+simpl. reflexivity.
+simpl.
+destruct (beq_nat x y) eqn:HH.
+exfalso. apply H. apply f_equal. apply beq_nat_true_iff. apply HH.
+reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 3 stars (beq_list)  *)
@@ -1483,15 +1552,20 @@ Proof.
     definition is correct, prove the lemma [beq_list_true_iff]. *)
 
 Fixpoint beq_list {A : Type} (beq : A -> A -> bool)
-                  (l1 l2 : list A) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
+         (l1 l2 : list A) : bool :=
+    match l1, l2 with
+  | [], [] => true
+  | [], h::tl => false
+  | h::tl, [] => false
+  | h1::tl1, h2::tl2 => if (beq h1 h2) then beq_list beq tl1 tl2 else false
+  end.
+  
 Lemma beq_list_true_iff :
   forall A (beq : A -> A -> bool),
     (forall a1 a2, beq a1 a2 = true <-> a1 = a2) ->
     forall l1 l2, beq_list beq l1 l2 = true <-> l1 = l2.
 Proof.
-(* FILL IN HERE *) Admitted.
+ (* FILL IN HERE *) Admitted. 
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (All_forallb)  *)
@@ -1646,7 +1720,16 @@ Qed.
 Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros P.
+unfold not.
+intros H.
+apply H.
+right.
+intros HH.
+apply H.
+left.
+apply HH.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (not_exists_dist)  *)
@@ -1666,7 +1749,7 @@ Theorem not_exists_dist :
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (classical_axioms)  *)

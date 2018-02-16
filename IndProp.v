@@ -131,7 +131,10 @@ Qed.
 Theorem ev_double : forall n,
   ev (double n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+induction n. 
+-  simpl. apply ev_0.
+-  simpl. apply ev_SS. apply IHn.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -275,7 +278,10 @@ Proof.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n H.
+inversion H.
+apply evSS_ev in H1.  
+exact H1.
 (** [] *)
 
 (** **** Exercise: 1 star (even5_nonsense)  *)
@@ -284,7 +290,8 @@ Proof.
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros contra. inversion contra. inversion H0. inversion H2.
+Qed.  
 (** [] *)
 
 (** The way we've used [inversion] here may seem a bit
@@ -349,7 +356,7 @@ Proof.
 
     assert (I : (exists k', n' = double k') ->
                 (exists k, S (S n') = double k)).
-    { intros [k' Hk']. rewrite Hk'. exists (S k'). reflexivity. }
+    { intros [k' Hk']. rewrite Hk'. exists (S k'). simpl. reflexivity. }
     apply I. (* reduce the original goal to the new one *)
 
 Admitted.
@@ -410,7 +417,11 @@ Qed.
 (** **** Exercise: 2 stars (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n m H1 H2.
+induction H1.
+simpl. exact H2.
+simpl. apply ev_SS. exact IHev.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (ev'_ev)  *)
@@ -450,7 +461,7 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+Admitted.
 (** [] *)
 
 (* ################################################################# *)
