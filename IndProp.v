@@ -282,6 +282,7 @@ intros n H.
 inversion H.
 apply evSS_ev in H1.  
 exact H1.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (even5_nonsense)  *)
@@ -440,7 +441,7 @@ Inductive ev' : nat -> Prop :=
 
 Theorem ev'_ev : forall n, ev' n <-> ev n.
 Proof.
- (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, recommended (ev_ev__ev)  *)
@@ -450,7 +451,7 @@ Proof.
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
@@ -461,6 +462,7 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
+(* FILL IN HERE *)
 Admitted.
 (** [] *)
 
@@ -566,45 +568,84 @@ Inductive next_even : nat -> nat -> Prop :=
 
 Lemma le_trans : forall m n o, m <= n -> n <= o -> m <= o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros m n o H1 H2.
+rewrite <- H1 in H2.
+exact H2.
+Qed.
 
 Theorem O_le_n : forall n,
   0 <= n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+induction n.
+apply le_n.
+apply le_S.  
+exact IHn.
+Qed.
 
 Theorem n_le_m__Sn_le_Sm : forall n m,
   n <= m -> S n <= S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n m H.
+rewrite <- PeanoNat.Nat.add_1_r.
+rewrite <- PeanoNat.Nat.add_1_r with m.
+apply Plus.plus_le_compat_r.
+exact H.
+Qed.
 
 Theorem Sn_le_Sm__n_le_m : forall n m,
   S n <= S m -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros n m H.
+rewrite <- PeanoNat.Nat.add_1_r in H.
+rewrite <- PeanoNat.Nat.add_1_r with m in H.
+apply Plus.plus_le_reg_l with (p:=1).
+rewrite plus_comm.
+rewrite plus_comm with (m:=m).
+exact H.
+Qed.
 
 Theorem le_plus_l : forall a b,
   a <= a + b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros a b.
+Search (le ?a (?a + ?b)).
+apply Plus.le_plus_l.
+Qed.
 
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof.
- unfold lt.
- (* FILL IN HERE *) Admitted.
+unfold lt.
+intros n1 n2 m H.
+split.
+-
+rewrite <- PeanoNat.Nat.add_succ_l in H.
+rewrite le_plus_l with (b:=n2).
+exact H.
+-
+rewrite <- PeanoNat.Nat.add_succ_r in H.
+rewrite le_plus_l with (b:=n1).
+rewrite plus_comm.
+exact H.
+Qed.
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+unfold lt.
+intros n m H.
+rewrite <- PeanoNat.Nat.add_1_l with (n:=m).
+rewrite plus_comm.
+rewrite <- le_plus_l.
+exact H.
+Qed.
 
 Theorem leb_complete : forall n m,
   leb n m = true -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 
 (** Hint: The next one may be easiest to prove by induction on [m]. *)
 
