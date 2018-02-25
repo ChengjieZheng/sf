@@ -645,7 +645,16 @@ Qed.
 Theorem leb_complete : forall n m,
   leb n m = true -> n <= m.
 Proof.
-(* FILL IN HERE *) Admitted.
+induction n.
+-
+induction m.
++ reflexivity.
++ intros H. apply O_le_n.
+-
+induction m.
++ intros H. inversion H.
++ intros H. inversion H. apply IHn in H1. apply le_n_S in H1. exact H1.
+Qed.
 
 (** Hint: The next one may be easiest to prove by induction on [m]. *)
 
@@ -653,14 +662,14 @@ Theorem leb_correct : forall n m,
   n <= m ->
   leb n m = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 
 (** Hint: This theorem can easily be proved without using [induction]. *)
 
 Theorem leb_true_trans : forall n m o,
   leb n m = true -> leb m o = true -> leb n o = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (leb_iff)  *)
@@ -979,13 +988,20 @@ Qed.
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
 Proof.
-  (* FILL IN HERE *) Admitted.
+unfold not.
+intros T s H.
+inversion H.
+Qed.
 
 Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros T s re1 re2 H.
+destruct H.
+- apply MUnionL. exact H.
+- apply MUnionR. exact H.
+Qed.
 
 (** The next lemma is stated in terms of the [fold] function from the
     [Poly] chapter: If [ss : list (list T)] represents a sequence of
@@ -1004,7 +1020,7 @@ Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
@@ -1396,7 +1412,7 @@ Qed.
 (** **** Exercise: 2 stars, recommended (reflect_iff)  *)
 Theorem reflect_iff : forall P b, reflect P b -> (P <-> b = true).
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* Fill IN HERE *) Admitted.
 (** [] *)
 
 (** The advantage of [reflect] over the normal "if and only if"
@@ -1447,7 +1463,7 @@ Fixpoint count n l :=
 Theorem beq_natP_practice : forall n l,
   count n l = 0 -> ~(In n l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* Fill IN HERE *) Admitted.
 (** [] *)
 
 (** In this small example, this technique gives us only a rather small
