@@ -788,16 +788,82 @@ Qed.
 (** Write a relation [bevalR] in the same style as
     [aevalR], and prove that it is equivalent to [beval].*)
 
+Module bevalR_division.
+  
 Inductive bevalR: bexp -> bool -> Prop :=
-(* FILL IN HERE *)
+| BTrue: bevalR BTrue true
+| BFalse: bevalR BFalse false
+| BEq: forall (e1 e2: aexp) (a1 a2: nat), (e1 \\ a1) -> (e2 \\ a2) -> bevalR (BEq e1 e2) (beq_nat a1 a2)
+| BLe: forall (e1 e2: aexp) (a1 a2: nat), (e1 \\ a1) -> (e2 \\ a2) -> bevalR (BLe e1 e2) (leb a1 a2)
+| BNot: forall (e: bexp) (b: bool), (bevalR e b) -> bevalR (BNot e) (negb b)
+| BAnd: forall (e1 e2: bexp) (b1 b2: bool), (bevalR e1 b1) -> (bevalR e2 b2) -> bevalR (BAnd e1 e2) (andb b1 b2)
 .
+
+Lemma beval_iff_bevalR_silly : forall b bv,
+  bevalR b bv <-> beval b = bv.
+Proof.
+ split.
+ - (* -> *)
+   intros H.
+   induction H; simpl.
+   + (* BTrue *)
+     reflexivity.
+   + (* BFalse*)
+     reflexivity.
+   + (* BEq *)
+     rewrite aeval_iff_aevalR in H. rewrite H. rewrite aeval_iff_aevalR in H0. rewrite H0. reflexivity.
+   + (* BLe *)
+     rewrite aeval_iff_aevalR in H. rewrite H. rewrite aeval_iff_aevalR in H0. rewrite H0. reflexivity.
+   + (* BNot *)
+     rewrite IHbevalR.  reflexivity.
+   + (* BAnd *)
+     rewrite IHbevalR1. rewrite IHbevalR2. reflexivity.
+ - (* <- *)
+   generalize dependent bv.
+   induction b; simpl; intros; subst. 
+   + (* BTrue *)
+     apply BTrue.
+   + (* BFalse *)
+     apply BFalse.
+   + (* BEq *)
+     apply BEq.
+     Search (aeval).
+     rewrite aeval_iff_aevalR. reflexivity.
+     rewrite aeval_iff_aevalR. reflexivity.
+   + (* BLe *)
+     apply BLe.
+     rewrite aeval_iff_aevalR. reflexivity.
+     rewrite aeval_iff_aevalR. reflexivity.
+   + (* BNot *)
+     apply BNot. apply IHb. reflexivity.
+   + (* BAnd *)
+     apply BAnd.
+     apply IHb1. reflexivity.
+     apply IHb2. reflexivity.
+Qed.
 
 Lemma beval_iff_bevalR : forall b bv,
   bevalR b bv <-> beval b = bv.
 Proof.
-  (* FILL IN HERE *) Admitted.
+ split.
+ - (* -> *)
+   intros H.
+   try (induction H; simpl; subst;
+     try reflexivity;
+     try (rewrite aeval_iff_aevalR in H; rewrite H; rewrite aeval_iff_aevalR in H0; rewrite H0; reflexivity) ).
+
+ - (* <- *)
+   generalize dependent bv.
+   try (induction b; simpl; intros; subst; 
+        try constructor;
+        try (rewrite aeval_iff_aevalR; reflexivity)).
+   apply IHb. reflexivity.
+   apply IHb1. reflexivity.
+   apply IHb2. reflexivity.
+Qed.
 (** [] *)
 
+End bevalR_division.
 End AExp.
 
 (* ================================================================= *)
@@ -1363,7 +1429,10 @@ Example ceval_example2:
   (X ::= 0;; Y ::= 1;; Z ::= 2) / { --> 0 } \\
   { X --> 0 ; Y --> 1 ; Z --> 2 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply E_Seq with {X --> 0}. apply E_Ass. reflexivity.
+  apply E_Seq  with {X --> 0; Y --> 1}.  apply E_Ass. reflexivity.
+  apply E_Ass. reflexivity.
+Qed.  
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (pup_to_n)  *)
@@ -1372,14 +1441,18 @@ Proof.
    Prove that this program executes as intended for [X] = [2]
    (this is trickier than you might expect). *)
 
-Definition pup_to_n : com
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition pup_to_n : com :=
+     Y ::= 0;;
+     WHILE ! (X = 0) DO
+       Y ::= Y + X;;
+       X ::= X - 1
+     END.
 
 Theorem pup_to_2_ceval :
   pup_to_n / { X --> 2 }
      \\ { X --> 2 ; Y --> 0 ; Y --> 2 ; X --> 1 ; Y --> 3 ; X --> 0 }.
 Proof.
-  (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* ================================================================= *)
